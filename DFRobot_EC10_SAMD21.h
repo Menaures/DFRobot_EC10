@@ -10,13 +10,18 @@
  * date  2018-11
  */
 
-#ifndef _DFROBOT_EC10_H_
-#define _DFROBOT_EC10_H_
+#ifndef _DFROBOT_EC10_SAMD21_H_
+#define _DFROBOT_EC10_SAMD21_H_
 
 #if ARDUINO >= 100
-#include "Arduino.h"
+    #include "Arduino.h"
 #else
-#include "WProgram.h"
+    #include "WProgram.h"
+#endif
+
+#ifndef __AVR__
+    #include <SPI.h>
+    #include <SD.h>
 #endif
 
 #define ReceivedBufferLength 10  //length of the Serial CMD buffer
