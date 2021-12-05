@@ -18,15 +18,16 @@
 #endif
 
 #include "DFRobot_EC10_SAMD21.h"
-#include <limits.h>
+
 
 // TODO: change to definition of existent eeprom
 #ifndef __AVR__
-#define EEPROM_EMULATION_FILE "config.txt"
-#define EEPROM_SIZE 3 * sizeof(float)
-#define CS_PIN 10
-#define EEPROM_write(address, p) {sdWrite(address, &p, sizeof(p));}
-#define EEPROM_read(address, p) {sdRead(address, &p, sizeof(p));}
+#ifndef EEPROM_SIZE
+#define EEPROM_SIZE KVALUEADDR + sizeof(float)
+#include <SD.h>
+#include <SPI.h>
+#include <Eeprom_emulation.h>
+#endif
 #else
 #include <EEPROM.h>
 #define EEPROM_write(address, p) {int i = 0; byte *pp = (byte*)&(p);for(; i < sizeof(p); i++) EEPROM.write(address+i, pp[i]);}
@@ -38,23 +39,7 @@
 #define ECREF 20.0
 
 
-void sdWrite(size_t address, void* pValue, size_t len) {
-    File file = SD.open(EEPROM_EMULATION_FILE, O_READ | O_WRITE | O_CREAT);
-    file.seek(address);
-    byte* pBuffer = (byte*) pValue;
-    file.write(pBuffer, len);
-    file.close();
-}
 
-
-void sdRead(size_t address, void* pOutValue, size_t len) {
-    File file = SD.open(EEPROM_EMULATION_FILE, O_READ);
-    if (!file.seek(address))
-        return;
-    byte* pOutBuffer = (byte*) pOutValue;
-    file.read(pOutBuffer, len);
-    file.close();
-}
 
 
 DFRobot_EC10::DFRobot_EC10()
@@ -80,6 +65,7 @@ void DFRobot_EC10::begin()
       File eepromEmulationFile = SD.open(EEPROM_EMULATION_FILE, O_CREAT | O_WRITE);
       byte buffer[EEPROM_SIZE] = { 0 };
       sdWrite(0, &buffer, sizeof(buffer));
+      eepromEmulationFile.close();
     }
     #endif
 
